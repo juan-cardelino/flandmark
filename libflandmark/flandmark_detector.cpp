@@ -13,6 +13,7 @@
 #include <string.h>
 #include <float.h>
 
+#include "CommonDefs.h"
 #include "liblbp.h"
 #include "flandmark_detector.h"
 
@@ -192,7 +193,7 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 	}
 
 	// allocate memory for FLANDMARK_Model
-	FLANDMARK_Model * tst = (FLANDMARK_Model*)malloc(sizeof(FLANDMARK_Model));
+	FLANDMARK_Model * tst = (FLANDMARK_Model*)gstMalloc(sizeof(FLANDMARK_Model));
 
     //int fscan_ret = -1;
     if (fscanf(fin, " %c ", &tst->data.options.M) < 1)
@@ -222,7 +223,7 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 
 	int M = tst->data.options.M;
 
-    tst->data.lbp = (FLANDMARK_LBP*)malloc(M*sizeof(FLANDMARK_LBP));
+    tst->data.lbp = (FLANDMARK_LBP*)gstMalloc(M*sizeof(FLANDMARK_LBP));
     for (int idx = 0; idx < M; ++idx)
 	{
         if (fscanf(fin, " %d %d ", &tst->data.lbp[idx].WINS_ROWS, &tst->data.lbp[idx].WINS_COLS) < 2)
@@ -240,7 +241,7 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 	}
 
 	// load model.W -----------------------------------------------------------
-	tst->W = (double*)malloc(tst->W_ROWS * sizeof(double));
+	tst->W = (double*)gstMalloc(tst->W_ROWS * sizeof(double));
 	if (fread(tst->W, tst->W_ROWS * sizeof(double), 1, fin) != 1)
 	{
 		printf( "Error reading file %s\n", filename);
@@ -248,8 +249,8 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 	}
 
 	// load model.data.mapTable -----------------------------------------------
-    p_int = (int*)malloc(M*4*sizeof(int));
-	tst->data.mapTable = (int*)malloc(M*4*sizeof(int));
+    p_int = (int*)gstMalloc(M*4*sizeof(int));
+	tst->data.mapTable = (int*)gstMalloc(M*4*sizeof(int));
     if (fread(p_int, M*4*sizeof(int), 1, fin) != 1)
 	{
 		printf( "Error reading file %s\n", filename);
@@ -259,13 +260,13 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 	{
 		tst->data.mapTable[i] = p_int[i];
 	}
-	free(p_int);
+	gstFree(p_int);
 
 	// load model.data.lbp ---------------------------------------------------
     for (int idx = 0; idx < M; ++idx)
 	{
 		// lbp{idx}.winSize
-		p_int = (int*)malloc(2*sizeof(int));
+		p_int = (int*)gstMalloc(2*sizeof(int));
 		if (fread(p_int, 2*sizeof(int), 1, fin) != 1)
 		{
 			printf( "Error reading file %s\n", filename);
@@ -275,21 +276,21 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 		{
 			tst->data.lbp[idx].winSize[i] = p_int[i];
 		}
-		free(p_int);
+		gstFree(p_int);
 
 		// lbp{idx}.hop
-		p_uint8 = (uint8_t*)malloc(sizeof(uint8_t));
+		p_uint8 = (uint8_t*)gstMalloc(sizeof(uint8_t));
 		if (fread(p_uint8, sizeof(uint8_t), 1, fin) != 1)
 		{
 			printf( "Error reading file %s\n", filename);
 			return 0;
 		}
 		tst->data.lbp[idx].hop = p_uint8[0];
-		free(p_uint8);
+		gstFree(p_uint8);
 
 		// lbp{idx}.wins
 		tsize = tst->data.lbp[idx].WINS_ROWS*tst->data.lbp[idx].WINS_COLS;
-		tst->data.lbp[idx].wins = (uint32_t*)malloc(tsize * sizeof(uint32_t));
+		tst->data.lbp[idx].wins = (uint32_t*)gstMalloc(tsize * sizeof(uint32_t));
 		if (fread(tst->data.lbp[idx].wins, tsize * sizeof(uint32_t), 1, fin) != 1)
 		{
 			printf( "Error reading file %s\n", filename);
@@ -299,8 +300,8 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 	}
 
 	// load model.options.S --------------------------------------------------
-    p_int = (int*)malloc(4*M*sizeof(int));
-	tst->data.options.S = (int*)malloc(4*M*sizeof(int));
+    p_int = (int*)gstMalloc(4*M*sizeof(int));
+	tst->data.options.S = (int*)gstMalloc(4*M*sizeof(int));
     if (fread(p_int, 4*M*sizeof(int), 1, fin) != 1)
 	{
 		printf( "Error reading file %s\n", filename);
@@ -311,7 +312,7 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 	{
 		tst->data.options.S[i] = p_int[i];
 	}
-	free(p_int);
+	gstFree(p_int);
 
 	// load model.options.PsiG -----------------------------------------------
 	FLANDMARK_PSIG * PsiGi = NULL;
@@ -322,15 +323,15 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 		switch (psigs_idx)
 		{
 			case 0:
-				tst->data.options.PsiGS0 = (FLANDMARK_PSIG*)malloc(tsize*sizeof(FLANDMARK_PSIG));
+				tst->data.options.PsiGS0 = (FLANDMARK_PSIG*)gstMalloc(tsize*sizeof(FLANDMARK_PSIG));
 				PsiGi = tst->data.options.PsiGS0;
 				break;
 			case 1:
-				tst->data.options.PsiGS1 = (FLANDMARK_PSIG*)malloc(tsize*sizeof(FLANDMARK_PSIG));
+				tst->data.options.PsiGS1 = (FLANDMARK_PSIG*)gstMalloc(tsize*sizeof(FLANDMARK_PSIG));
 				PsiGi = tst->data.options.PsiGS1;
 				break;
 			case 2:
-				tst->data.options.PsiGS2 = (FLANDMARK_PSIG*)malloc(tsize*sizeof(FLANDMARK_PSIG));
+				tst->data.options.PsiGS2 = (FLANDMARK_PSIG*)gstMalloc(tsize*sizeof(FLANDMARK_PSIG));
 				PsiGi = tst->data.options.PsiGS2;
 				break;
 		}
@@ -338,7 +339,7 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 		for (int idx = 0; idx < tsize; ++idx)
 		{
 			// disp ROWS
-			p_int = (int*)malloc(sizeof(int));
+			p_int = (int*)gstMalloc(sizeof(int));
 			if (fread(p_int, sizeof(int), 1, fin) != 1)
 			{
 				printf( "Error reading file %s\n", filename);
@@ -346,9 +347,9 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 				//exit(1);
 			}
 			PsiGi[idx].ROWS = p_int[0];
-			free(p_int);
+			gstFree(p_int);
 			// disp COLS
-			p_int = (int*)malloc(sizeof(int));
+			p_int = (int*)gstMalloc(sizeof(int));
 			if (fread(p_int, sizeof(int), 1, fin) != 1)
 			{
 				printf( "Error reading file %s\n", filename);
@@ -356,10 +357,10 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 				//exit(1);
 			}
 			PsiGi[idx].COLS = p_int[0];
-			free(p_int);
+			gstFree(p_int);
 			// disp
 			tmp_tsize = PsiGi[idx].ROWS*PsiGi[idx].COLS;
-			PsiGi[idx].disp = (int*)malloc(tmp_tsize*sizeof(int));
+			PsiGi[idx].disp = (int*)gstMalloc(tmp_tsize*sizeof(int));
 			if (fread(PsiGi[idx].disp, tmp_tsize*sizeof(int), 1, fin) != 1)
 			{
 				printf( "Error reading file %s\n", filename);
@@ -371,11 +372,11 @@ FLANDMARK_Model * flandmark_init(const char* filename)
 
 	fclose(fin);
 
-    tst->normalizedImageFrame = (uint8_t*)calloc(tst->data.options.bw[0]*tst->data.options.bw[1], sizeof(uint8_t));
+    tst->normalizedImageFrame = (uint8_t*)gstCalloc(tst->data.options.bw[0]*tst->data.options.bw[1], sizeof(uint8_t));
 
-    tst->bb = (double*)calloc(4, sizeof(double));
+    tst->bb = (double*)gstCalloc(4, sizeof(double));
 
-    tst->sf = (float*)calloc(2, sizeof(float));
+    tst->sf = (float*)gstCalloc(2, sizeof(float));
 
 	return tst;
 }
@@ -616,19 +617,19 @@ void flandmark_free(FLANDMARK_Model* model)
 		int tsize = model->data.options.PSIG_ROWS[psig_idx] * model->data.options.PSIG_COLS[psig_idx];
 		for (int i = 0; i < tsize; ++i)
 		{
-			free(PsiGi[i].disp);
+			gstFree(PsiGi[i].disp);
 		}
-		free(PsiGi);
+		gstFree(PsiGi);
 	}
 
-	free(model->W);
+	gstFree(model->W);
 	for (int i = 0; i < model->data.options.M; ++i)
 	{
-		free(model->data.lbp[i].wins);
+		gstFree(model->data.lbp[i].wins);
 	}
-	free(model->data.lbp);
-	free(model->data.options.S);
-	free(model->data.mapTable);
+	gstFree(model->data.lbp);
+	gstFree(model->data.options.S);
+	gstFree(model->data.mapTable);
 
     //if (model->croppedImage)
     //	cvReleaseImage(&model->croppedImage);
@@ -637,15 +638,15 @@ void flandmark_free(FLANDMARK_Model* model)
     //	cvReleaseImage(&model->resizedImage);
 
     if (model->normalizedImageFrame)
-		free(model->normalizedImageFrame);
+		gstFree(model->normalizedImageFrame);
 
     if (model->bb)
-		free(model->bb);
+		gstFree(model->bb);
 
     if (model->sf)
-		free(model->sf);
+		gstFree(model->sf);
 
-	free(model);
+	gstFree(model);
 }
 
 void flandmark_get_psi_mat(FLANDMARK_PSI* Psi, FLANDMARK_Model* model, int lbpidx)
@@ -658,7 +659,7 @@ void flandmark_get_psi_mat(FLANDMARK_PSI* Psi, FLANDMARK_Model* model, int lbpid
 	uint16_t nPyramids = model->data.lbp[lbpidx].hop;
 	uint32_t nDim = liblbp_pyr_get_dim(win_H, win_W, nPyramids); uint32_t nData = model->data.lbp[lbpidx].WINS_COLS;
 
-	Features = (char*)calloc(nDim*nData, sizeof(char));
+	Features = (char*)gstCalloc(nDim*nData, sizeof(char));
 	if (Features == NULL)
 	{
 		printf( "Not enough memory for LBP features.\n");
@@ -669,7 +670,7 @@ void flandmark_get_psi_mat(FLANDMARK_PSI* Psi, FLANDMARK_Model* model, int lbpid
     uint32_t cnt0, mirror, x, x1, y, y1, idx, *win;
     const uint8_t *img_ptr;
 
-	win = (uint32_t*)malloc(win_H*win_W*sizeof(uint32_t));
+	win = (uint32_t*)gstMalloc(win_H*win_W*sizeof(uint32_t));
 	if(win == NULL)
 	{
 		printf( "Not enough memory for cropped_window.\n");
@@ -699,7 +700,7 @@ void flandmark_get_psi_mat(FLANDMARK_PSI* Psi, FLANDMARK_Model* model, int lbpid
 		}
 		liblbp_pyr_features(&Features[nDim*i], nDim, win, win_H, win_W);
 	}
-	free(win);
+	gstFree(win);
 
 	Psi->data = Features;
 }
@@ -720,14 +721,14 @@ void flandmark_get_psi_mat_sparse(FLANDMARK_PSI_SPARSE* Psi, FLANDMARK_Model* mo
     uint32_t cnt0, mirror, x, x1, y, y1, idx, *win;
 	uint8_t *img_ptr;
 
-	Features = (t_index*)calloc(nDim*nData, sizeof(t_index));
+	Features = (t_index*)gstCalloc(nDim*nData, sizeof(t_index));
 	if (Features == NULL)
 	{
 		printf( "Not enough memory for LBP features.\n");
 		exit(1);
 	}
 
-	win = (uint32_t*)calloc(win_H*win_W, sizeof(uint32_t));
+	win = (uint32_t*)gstCalloc(win_H*win_W, sizeof(uint32_t));
 	if(win == NULL)
 	{
 		printf( "Not enough memory for cropped_window.\n");
@@ -762,7 +763,7 @@ void flandmark_get_psi_mat_sparse(FLANDMARK_PSI_SPARSE* Psi, FLANDMARK_Model* mo
 	Psi->PSI_ROWS = nDim;
 	Psi->idxs = Features;
 
-	free(win);
+	gstFree(win);
 }
 
 void flandmark_argmax(double *smax, FLANDMARK_Options *options, const int *mapTable, FLANDMARK_PSI_SPARSE *Psi_sparse, double **q, double **g)
@@ -770,14 +771,14 @@ void flandmark_argmax(double *smax, FLANDMARK_Options *options, const int *mapTa
     uint8_t M = options->M;
 
     // compute argmax
-    int * indices = (int*)malloc(M*sizeof(int));
+    int * indices = (int*)gstMalloc(M*sizeof(int));
     int tsize = mapTable[INDEX(1, 3, M)] - mapTable[INDEX(1, 2, M)] + 1;
 
     // left branch - store maximum and index of s5 for all positions of s1
     int q1_length = Psi_sparse[1].PSI_COLS;
 
-    double * s1 = (double *)calloc(2*q1_length, sizeof(double));
-    double * s1_maxs = (double *)calloc(q1_length, sizeof(double));
+    double * s1 = (double *)gstCalloc(2*q1_length, sizeof(double));
+    double * s1_maxs = (double *)gstCalloc(q1_length, sizeof(double));
     for (int i = 0; i < q1_length; ++i)
     {
         // dot product <g_5, PsiGS1>
@@ -796,8 +797,8 @@ void flandmark_argmax(double *smax, FLANDMARK_Options *options, const int *mapTa
 
     // right branch (s2->s6) - store maximum and index of s6 for all positions of s2
     int q2_length = Psi_sparse[2].PSI_COLS;
-    double * s2 = (double *)calloc(2*q2_length, sizeof(double));
-    double * s2_maxs = (double *)calloc(q2_length, sizeof(double));
+    double * s2 = (double *)gstCalloc(2*q2_length, sizeof(double));
+    double * s2_maxs = (double *)gstCalloc(q2_length, sizeof(double));
     for (int i = 0; i < q2_length; ++i)
     {
         // dot product <g_6, PsiGS2>
@@ -817,7 +818,7 @@ void flandmark_argmax(double *smax, FLANDMARK_Options *options, const int *mapTa
     int q0_length = Psi_sparse[0].PSI_COLS;
     double maxs0 = -FLT_MAX; int maxs0_idx = -1;
     double maxq10 = -FLT_MAX, maxq20 = -FLT_MAX, maxq30 = -FLT_MAX, maxq40 = -FLT_MAX, maxq70 = -FLT_MAX;
-    double * s0 = (double *)calloc(M*q0_length, sizeof(double));
+    double * s0 = (double *)gstCalloc(M*q0_length, sizeof(double));
     for (int i = 0; i < q0_length; ++i)
     {
         // q10
@@ -868,9 +869,9 @@ void flandmark_argmax(double *smax, FLANDMARK_Options *options, const int *mapTa
     }
 
     // cleanup temp variables
-    free(s0);
-    free(s1); free(s1_maxs);
-    free(s2); free(s2_maxs);
+    gstFree(s0);
+    gstFree(s1); gstFree(s1_maxs);
+    gstFree(s2); gstFree(s2_maxs);
 
     // convert 1D indices to 2D coordinates of estimated positions
     //int * optionsS = &options->S[0];
@@ -881,7 +882,7 @@ void flandmark_argmax(double *smax, FLANDMARK_Options *options, const int *mapTa
         smax[INDEX(0, i, 2)] = float(COL(indices[i], rows) + optionsS[INDEX(0, i, 4)]);
         smax[INDEX(1, i, 2)] = float(ROW(indices[i], rows) + optionsS[INDEX(1, i, 4)]);
     }
-    free(indices);
+    gstFree(indices);
 }
 
 int flandmark_detect_base(uint8_t* face_image, FLANDMARK_Model* model, double * landmarks)
@@ -899,15 +900,15 @@ int flandmark_detect_base(uint8_t* face_image, FLANDMARK_Model* model, double * 
 	}
 
 	// get PSI matrix
-    FLANDMARK_PSI_SPARSE * Psi_sparse = (FLANDMARK_PSI_SPARSE*)malloc(M*sizeof(FLANDMARK_PSI_SPARSE));
+    FLANDMARK_PSI_SPARSE * Psi_sparse = (FLANDMARK_PSI_SPARSE*)gstMalloc(M*sizeof(FLANDMARK_PSI_SPARSE));
 	for (int idx = 0; idx < M; ++idx)
 	{
 		flandmark_get_psi_mat_sparse(&Psi_sparse[idx], model, idx);
 	}
 
 	// get Q and G
-	double ** q = (double**)calloc(M, sizeof(double*));
-	double ** g = (double**)calloc((M-1), sizeof(double*));
+	double ** q = (double**)gstCalloc(M, sizeof(double*));
+	double ** g = (double**)gstCalloc((M-1), sizeof(double*));
 
 	int idx_qtemp = 0;
 
@@ -916,13 +917,13 @@ int flandmark_detect_base(uint8_t* face_image, FLANDMARK_Model* model, double * 
 		// Q
 		tsize = mapTable[INDEX(idx, 1, M)] - mapTable[INDEX(idx, 0, M)] + 1;
 
-		double * q_temp = (double*)calloc(tsize, sizeof(double));
+		double * q_temp = (double*)gstCalloc(tsize, sizeof(double));
 		memcpy(q_temp, W+mapTable[INDEX(idx, 0, M)]-1, tsize*sizeof(double));
 
 		// sparse dot product <W_q, PSI_q>
 		cols = Psi_sparse[idx].PSI_COLS; rows = Psi_sparse[idx].PSI_ROWS;
 		uint32_t *psi_temp = Psi_sparse[idx].idxs;
-		q[idx] = (double*)malloc(cols*sizeof(double));
+		q[idx] = (double*)gstMalloc(cols*sizeof(double));
 		for (int i = 0; i < cols; ++i)
 		{
 			double dotprod = 0.0f;
@@ -933,13 +934,13 @@ int flandmark_detect_base(uint8_t* face_image, FLANDMARK_Model* model, double * 
 			}
 			q[idx][i] = dotprod;
 		}
-		free(q_temp);
+		gstFree(q_temp);
 
 		// G
 		if (idx > 0)
 		{
 			tsize = mapTable[INDEX(idx, 3, M)] - mapTable[INDEX(idx, 2, M)] + 1;
-			g[idx - 1] = (double*)malloc(tsize*sizeof(double));
+			g[idx - 1] = (double*)gstMalloc(tsize*sizeof(double));
 			memcpy(g[idx - 1], W+mapTable[INDEX(idx, 2, M)]-1, tsize*sizeof(double));
 		}
 	}
@@ -950,22 +951,22 @@ int flandmark_detect_base(uint8_t* face_image, FLANDMARK_Model* model, double * 
 	// cleanup Psi_sparse[].idxs
 	for (int i = 0; i < M; ++i)
 	{
-		free(Psi_sparse[i].idxs);
+		gstFree(Psi_sparse[i].idxs);
 	}
-	free(Psi_sparse);
+	gstFree(Psi_sparse);
 
 	// cleanup q
 	for (int i = 0; i < M; ++i)
 	{
-		free(q[i]);
+		gstFree(q[i]);
 	}
-	free(q);
+	gstFree(q);
 	// cleanup g
 	for (int i = 0; i < M - 1; ++i)
 	{
-		free(g[i]);
+		gstFree(g[i]);
 	}
-	free(g);
+	gstFree(g);
 
 	return 0;
 }
