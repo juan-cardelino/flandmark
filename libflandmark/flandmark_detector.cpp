@@ -632,10 +632,10 @@ void flandmark_free(FLANDMARK_Model* model)
 	gstFree(model->data.mapTable);
 
     //if (model->croppedImage)
-    //	cvReleaseImage(&model->croppedImage);
+    //	gstCVReleaseImage(model->croppedImage);
 
     //if (model->resizedImage)
-    //	cvReleaseImage(&model->resizedImage);
+    //	gstCVReleaseImage(model->resizedImage);
 
     if (model->normalizedImageFrame)
 		gstFree(model->normalizedImageFrame);
@@ -1044,8 +1044,8 @@ int flandmark_imcrop(IplImage *input, IplImage *output, const CvRect region)
 	cvSetImageROI(input, region);
     if (output->width < region.width || output->height < region.height)
 	{
-		cvReleaseImage(&output);
-        output = cvCreateImage(cvSize(region.width, region.height), IPL_DEPTH_8U, 1);
+		gstCVReleaseImage(output);
+        output = gstCVCreateImage(cvSize(region.width, region.height), IPL_DEPTH_8U, 1);
 	} else {
 		output->width = region.width;
 		output->height = region.height;
@@ -1081,9 +1081,9 @@ int flandmark_get_normalized_image_frame(IplImage *input, const int bbox[], doub
 		return 1;
 	}
 
-    IplImage *croppedImage = cvCreateImage(cvSize(input->width, input->height), IPL_DEPTH_8U, 1);
+    IplImage *croppedImage = gstCVCreateImage(cvSize(input->width, input->height), IPL_DEPTH_8U, 1);
 
-    IplImage *resizedImage = cvCreateImage(cvSize(model->data.options.bw[0], model->data.options.bw[1]), IPL_DEPTH_8U, 1);
+    IplImage *resizedImage = gstCVCreateImage(cvSize(model->data.options.bw[0], model->data.options.bw[1]), IPL_DEPTH_8U, 1);
 
 	// crop and resize image to normalized frame
     if(flandmark_imcrop(input, croppedImage, cvRect((int)bb[0], (int)bb[1], (int)bb[2]-(int)bb[0]+1, (int)bb[3]-(int)bb[1]+1)))
@@ -1103,8 +1103,8 @@ int flandmark_get_normalized_image_frame(IplImage *input, const int bbox[], doub
 		}
 	}
 
-    cvReleaseImage(&croppedImage);
-    cvReleaseImage(&resizedImage);
+    gstCVReleaseImage(croppedImage);
+    gstCVReleaseImage(resizedImage);
 
 	return 0;
 }
