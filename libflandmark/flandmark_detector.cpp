@@ -16,6 +16,7 @@
 #include "CommonDefs.h"
 #include "liblbp.h"
 #include "flandmark_detector.h"
+#include "curves.h"
 
 #include "opencv2/imgproc/imgproc_c.h"
 
